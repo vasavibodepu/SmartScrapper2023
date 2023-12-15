@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Team17" parallel="tests" >
+  <test thread-count="1" name="HypothyroidismTest">
+    <classes>
+      <class name="com.numpy.scraping.team17.Hypothyroidism"/>
+    </classes>
+  </test> <!-- HypothyroidismTest -->
+  <test thread-count="1" name="DiabeticsTest">
+    <classes>
+      <class name="com.numpy.scraping.team17.Diabetics"/>
+    </classes>
+  </test> <!-- DiabeticsTest -->
+</suite> <!-- Team17 -->

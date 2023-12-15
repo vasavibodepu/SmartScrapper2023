@@ -137,7 +137,7 @@ public class HyperTension {
 		return tempArray;
 	}
 	
-    @BeforeTest
+//    @BeforeTest
 	public void lauch_website() throws IOException
 	{
     	WebDriverManager.chromedriver().setup();
@@ -151,7 +151,7 @@ public class HyperTension {
 	
 		
 	
-	@Test
+//	@Test
 	public void search_for_recipes_hypertension() throws InterruptedException, IOException
 	{
 		WebDriver driver = new ChromeDriver();
