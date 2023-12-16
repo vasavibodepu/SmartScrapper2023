@@ -12,7 +12,7 @@ import org.openqa.selenium.WebElement;
  * @author vbodepu Scrape Diabetics Recipes from TarlaDalal.com
  *
  */
-public class Diabetics extends BaseRecipeExtractor {
+public class Diabetes extends BaseRecipeExtractor {
 
 	/**
 	 * Export Recipes list for Diabetics
@@ -30,7 +30,7 @@ public class Diabetics extends BaseRecipeExtractor {
 		morbidityLink.click();
 
 		// Export all recipes for morbidity
-		exportRecipes("Diabetics", 0, 1);
+		exportRecipes("Diabetes", 0, 1);
 	}
 	
 	/**
