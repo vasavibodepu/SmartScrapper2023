@@ -32,7 +32,7 @@ public class Hypothyroidism extends BaseRecipeExtractor {
 		hypothyroidismRecipesLink.click();
 
 		// Export all recipes for morbidity
-		exportRecipes("Hypothyroidism");
+		exportRecipes("Hypothyroidism", 2, 3);
 	}
 
 	/**

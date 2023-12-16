@@ -30,7 +30,7 @@ public class Diabetics extends BaseRecipeExtractor {
 		morbidityLink.click();
 
 		// Export all recipes for morbidity
-		exportRecipes("Diabetics");
+		exportRecipes("Diabetics", 0, 1);
 	}
 	
 	/**
