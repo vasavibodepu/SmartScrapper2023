@@ -43,14 +43,14 @@ public class BaseRecipeExtractor {
 	private static final String FILE_PATH_INGREDIENTS_AND_COMORBIDITIES = SRC_TEST_RESOURCES_TEST_DATA_INPUT
 			+ "IngredientsAndComorbidities.xlsx";
 	private static final String HOME_PAGE = "https://www.tarladalal.com/";
-	private static final int MAX_RECEIPES_PER_MORBIDITY = 10;
-	private static final int MAX_PAGES_TO_FETCH = 1;
-	protected WebDriver driver = null;
-
 	private static final String INGREDIENTS_WORK_SHEET_NAME = "Diabetes-Hypothyroidism-Hyperte";
 	private static final String ALLERGIES_WORK_SHEET_NAME = "Allergies";
 	private static final String FILE_PATH_ALLERGIES = SRC_TEST_RESOURCES_TEST_DATA_INPUT + "Allergies.xlsx";
 
+	private static final int MAX_RECEIPES_PER_MORBIDITY = 5;
+	private static final int MAX_PAGES_TO_FETCH = 1;
+	protected WebDriver driver = null;
+	
 	public BaseRecipeExtractor() {
 		super();
 	}
@@ -75,7 +75,7 @@ public class BaseRecipeExtractor {
 	protected void exportRecipes(String morbidity, int eliminateIngredientColumn, int toAddIngredientColumn) {
 
 		// arraylist to store all the links
-		ArrayList<String> links = new ArrayList<>(14);
+		ArrayList<String> links = new ArrayList<>();
 
 		fetchAllRecipeUrls(links, driver);
 		System.out.println("Morbidity : " + morbidity + " :: Number of Urls to scrape : " + links.size());
@@ -91,11 +91,9 @@ public class BaseRecipeExtractor {
 
 			// populate all other recipe fields from the details page.
 			driver.get(recipePageUrl);
-//			System.out.println("Scraping the Page : " + recipePageUrl);
 
 			// read xpaths and values for name, ingredients etc
 			populateRecipe(recipe);
-			// System.out.println(recipe);
 
 			allRecipes.add(recipe);
 		}
@@ -107,7 +105,8 @@ public class BaseRecipeExtractor {
 
 		for (Recipe recipe : allRecipes) {
 			// Check if any string from filter columnValues is present in
-			// ingredients using Stream API
+			// ingredients using Java Stream API- if ingredients contains filter
+			// list of values
 			boolean foundEliminatedIngredient = eliminateFIlter.stream().anyMatch(recipe.getIngredients()::contains);
 			if (!foundEliminatedIngredient) {
 				safeList.add(recipe);
@@ -122,7 +121,7 @@ public class BaseRecipeExtractor {
 		List<Recipe> nonAllergicRecipies = new ArrayList<Recipe>();
 		List<String> alleriesList = readAllergiesList();
 
-//		System.out.println("alleriesList : " + alleriesList);
+		// System.out.println("alleriesList : " + alleriesList);
 
 		// Filter receipts that have Allergies
 		for (Recipe recipe : safeList) {
@@ -136,7 +135,7 @@ public class BaseRecipeExtractor {
 		}
 
 		// Write recipes that contain ingredients from to add list into excel
-		// sheet morbidity_To_Add.xlsx. e.g, Hypothyroidism_To_Add.xlsx
+		// sheet morbidity_Allergies.xlsx. e.g, Hypothyroidism_Allergies.xlsx
 		String morbidityAllergiesFileName = TEAM_PREFIX_FOR_XLSX + morbidity + ALLERGIES_SUFFIX;
 		ExcelWriter.writeRecipesToExcel(nonAllergicRecipies, morbidityAllergiesFileName,
 				SRC_TEST_RESOURCES_TEST_DATA_OUTPUT + morbidityAllergiesFileName + XLSX_EXTENSION);
@@ -163,9 +162,9 @@ public class BaseRecipeExtractor {
 
 	/**
 	 * Reads the eliminate or to add list for each morbidity based on the column
-	 * index set Used the Single excel document shared by the Hackathon
-	 * organizers and reading data for each morbidity based on column. e.g.,
-	 * Eliminate List column for Hypothyroidism is 2.
+	 * index. Used the Single excel document shared by the Hackathon organizers
+	 * and reading data for each morbidity based on column. e.g., Eliminate List
+	 * column for Hypothyroidism is 2.
 	 */
 	private List<String> readFiltersForEachMorbidity(int columnIndex) {
 		List<String> columnValues = null;
@@ -184,10 +183,9 @@ public class BaseRecipeExtractor {
 	}
 
 	/**
-	 * Reads the eliminate or to add list for each morbidity based on the column
-	 * index set Used the Single excel document shared by the Hackathon
-	 * organizers and reading data for each morbidity based on column. e.g.,
-	 * Eliminate List column for Hypothyroidism is 2.
+	 * Reads the filters for Allergies list shared by the Hackathon organisers
+	 * 
+	 * @return
 	 */
 	private List<String> readAllergiesList() {
 		List<String> columnValues = null;
@@ -205,6 +203,12 @@ public class BaseRecipeExtractor {
 		return columnValues;
 	}
 
+	/**
+	 * In each recipe page fetching the required data for expected output
+	 * elements
+	 * 
+	 * @param recipe
+	 */
 	private void populateRecipe(Recipe recipe) {
 
 		// Recipe Id
@@ -242,9 +246,9 @@ public class BaseRecipeExtractor {
 		recipe.setCookingTime(cookingTime.getText());
 
 		// Preparation Method
-		// WebElement preparationMethod =
-		// driver.findElement(By.xpath("//div[@id='recipe_small_steps']"));
-		// recipe.setPreparationmethod(preparationMethod.getText());
+		 WebElement preparationMethod =
+		 driver.findElement(By.xpath("//div[@id='recipe_small_steps']"));
+		 recipe.setPreparationmethod(preparationMethod.getText());
 
 		// Nutrient Values
 		// WebElement nutrientValues = driver.findElement(By.xpath(""));
@@ -274,7 +278,12 @@ public class BaseRecipeExtractor {
 	}
 
 	/**
-	 * @return
+	 * fetch URLs for each recipe that is stored in the <a> tag of each recipe
+	 * name in the results card
+	 * 
+	 * @param links
+	 *            - this stores URLs to recipes
+	 * 
 	 */
 	private void populateRecipeLinks(ArrayList<String> links) {
 		// list of WebElements that store all the links
@@ -295,6 +304,13 @@ public class BaseRecipeExtractor {
 
 	}
 
+	/**
+	 * fetches recipe URLs based on the pagination found in the morbidity
+	 * landing page
+	 * 
+	 * @param allLInks
+	 * @param driver
+	 */
 	private void fetchAllRecipeUrls(ArrayList<String> allLInks, WebDriver driver) {
 		// list of WebElements that store all the links
 		WebElement pagination = driver.findElement(By.xpath("//div[@id='pagination']"));

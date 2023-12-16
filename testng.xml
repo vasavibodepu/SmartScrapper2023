@@ -6,9 +6,9 @@
       <class name="com.numpy.scraping.team17.Hypothyroidism"/>
     </classes>
   </test> <!-- HypothyroidismTest -->
-  <test thread-count="1" name="DiabeticsTest">
+  <test thread-count="1" name="DiabetesTest">
     <classes>
-      <class name="com.numpy.scraping.team17.Diabetics"/>
+      <class name="com.numpy.scraping.team17.Diabetes"/>
     </classes>
-  </test> <!-- DiabeticsTest -->
+  </test> <!-- DiabetesTest -->
 </suite> <!-- Team17 -->
