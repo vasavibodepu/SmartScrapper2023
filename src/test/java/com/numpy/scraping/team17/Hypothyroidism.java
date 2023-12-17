@@ -40,7 +40,7 @@ public class Hypothyroidism extends BaseRecipeExtractor {
 	 */
 	private void loadRecipiesPage() {
 		// find and click the link recipes
-		WebElement headerRecipesLink = driver.findElement(By.xpath("//div[normalize-space()='RECIPES']"));
-		headerRecipesLink.click();
+		WebElement homePageRecipesLink = driver.findElement(By.xpath("//div[normalize-space()='RECIPES']"));
+		homePageRecipesLink.click();
 	}
 }
