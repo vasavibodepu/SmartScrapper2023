@@ -11,4 +11,9 @@
       <class name="com.numpy.scraping.team17.Diabetics"/>
     </classes>
   </test> <!-- DiabeticsTest -->
+   <test thread-count="1" name="PCOSTest">
+    <classes>
+      <class name="com.numpy.scraping.team17.PCOS"/>
+    </classes>
+  </test> <!-- PCOSTest -->
 </suite> <!-- Team17 -->
