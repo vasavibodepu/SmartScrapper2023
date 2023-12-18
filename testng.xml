@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Team17">
+<suite name="SmartScrappers_Team17" parallel="tests">
 	<test thread-count="1" name="DiabetesTest" >
 		<classes>
 			<class name="com.numpy.scraping.team17.Diabetes" />

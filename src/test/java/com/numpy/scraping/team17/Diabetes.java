@@ -15,11 +15,11 @@ import org.openqa.selenium.WebElement;
 public class Diabetes extends BaseRecipeExtractor {
 
 	/**
-	 * Export Recipes list for Diabetics
+	 * Export Recipes list for Diabetes
 	 * @throws InterruptedException
 	 */
 	@Test
-	public void scrapDiabeticsRecipes() throws InterruptedException {
+	public void scrapDiabetesRecipes() throws InterruptedException {
 
 		// load the recipes page that has all recipes by category
 		loadRecipiesPage();

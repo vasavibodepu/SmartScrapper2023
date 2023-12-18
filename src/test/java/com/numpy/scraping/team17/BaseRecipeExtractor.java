@@ -2,9 +2,13 @@ package com.numpy.scraping.team17;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -37,7 +41,6 @@ public class BaseRecipeExtractor {
 
 	private static final String PAGEINDEX_PARAM_NAME = "?pageindex=";
 	private static final String ALLERGIES_SUFFIX = "_Allergies";
-	private static final int ALLERGIES_COLUMN_INDEX = 1;
 	private static final String TO_ADD = "_To_Add";
 	private static final String XLSX_EXTENSION = ".xlsx";
 	private static final String TEAM_PREFIX_FOR_XLSX = "SmartScrappers_Team17_";
@@ -51,9 +54,19 @@ public class BaseRecipeExtractor {
 	private static final String INGREDIENTS_WORK_SHEET_NAME = "Diabetes-Hypothyroidism-Hyperte";
 	private static final String ALLERGIES_WORK_SHEET_NAME = "Allergies";
 	private static final String FILE_PATH_ALLERGIES = SRC_TEST_RESOURCES_TEST_DATA_INPUT + "Allergies.xlsx";
+	private static final int ALLERGIES_COLUMN_INDEX = 1;
 
-	private static final int MAX_RECEIPES_PER_MORBIDITY = 720;
-	private static final int MAX_PAGES_TO_FETCH = 30;
+	private static final String FOOD_CATEGORIES_WORK_SHEET_NAME = "FoodCategories";
+	private static final String FILE_PATH_FOOD_CATEGORIES = SRC_TEST_RESOURCES_TEST_DATA_INPUT + "FoodCategories.xlsx";
+	private static final int FOOD_CATEGORIES_COLUMN_INDEX = 1;
+
+	private static final String RECIPE_CATEGORIES_WORK_SHEET_NAME = "RecipeCategories";
+	private static final String FILE_PATH_RECIPE_CATEGORIES = SRC_TEST_RESOURCES_TEST_DATA_INPUT
+			+ "RecipeCategories.xlsx";
+	private static final int RECIPE_CATEGORIES_COLUMN_INDEX = 1;
+
+	private static final int MAX_RECEIPES_PER_MORBIDITY = 600;
+	private static final int MAX_PAGES_TO_FETCH = 25;
 	protected WebDriver driver = null;
 
 	public BaseRecipeExtractor() {
@@ -100,6 +113,13 @@ public class BaseRecipeExtractor {
 		// arraylist to store all the links
 		ArrayList<String> links = new ArrayList<>();
 
+		// Read input criteria for ingredients, food, recipe, allergies
+		List<String> eliminateFIlter = readFiltersForEachMorbidity(eliminateIngredientColumn);
+		List<String> toAddIngredients = readFiltersForEachMorbidity(toAddIngredientColumn);
+		List<String> alleriesList = readAllergiesList();
+		List<String> foodCategoriesList = readFoodCategoryList();
+		List<String> recipeCategoriesList = readRecipeCategoryList();
+
 		System.out.println("################# Calculating the number of pages to scan for Morbidity : " + morbidity);
 		fetchAllRecipeUrlsFromPagination(links, driver);
 		System.out.println("Morbidity : " + morbidity + " :: Number of Urls to scrape : " + links.size());
@@ -115,7 +135,7 @@ public class BaseRecipeExtractor {
 			recipe.setRecipeURL(recipePageUrl);
 
 			// read xpaths and values for name, ingredients etc
-			populateRecipe(recipe);
+			populateRecipe(recipe, foodCategoriesList, recipeCategoriesList);
 
 			// System.out.println("recipe : " + recipe);
 
@@ -124,20 +144,20 @@ public class BaseRecipeExtractor {
 			}
 		}
 
-//		System.out.println("allRecipes : " + allRecipes);
+		// System.out.println("allRecipes : " + allRecipes);
 		System.out.println("Exporting recipes that does not have eliminated ingredients for modbidity : " + morbidity);
 
 		// Export allRecipes that does not have eliminated ingredients
 		// into excel <Morbidity>.xlsx . e.g., Hypothyroidism.xlsx
 		List<Recipe> safeList = new ArrayList<Recipe>();
-		List<String> eliminateFIlter = readFiltersForEachMorbidity(eliminateIngredientColumn);
 
 		for (Recipe recipe : allRecipes) {
 			// Check if any string from filter columnValues is present in
 			// ingredients using Java Stream API- if ingredients contains filter
 			// list of values
 			boolean foundEliminatedIngredient = eliminateFIlter.stream().anyMatch(recipe.getIngredients()::contains);
-//			System.out.println("foundEliminatedIngredient :  " + foundEliminatedIngredient);
+			// System.out.println("foundEliminatedIngredient : " +
+			// foundEliminatedIngredient);
 			if (!foundEliminatedIngredient) {
 				safeList.add(recipe); // safeList recipes doesn't have
 										// ingredients from eliminated list
@@ -150,7 +170,6 @@ public class BaseRecipeExtractor {
 				SRC_TEST_RESOURCES_TEST_DATA_OUTPUT + TEAM_PREFIX_FOR_XLSX + morbidity + XLSX_EXTENSION);
 
 		List<Recipe> nonAllergicRecipies = new ArrayList<Recipe>();
-		List<String> alleriesList = readAllergiesList();
 
 		// System.out.println("alleriesList : " + alleriesList);
 
@@ -174,7 +193,6 @@ public class BaseRecipeExtractor {
 				SRC_TEST_RESOURCES_TEST_DATA_OUTPUT + morbidityAllergiesFileName + XLSX_EXTENSION);
 
 		List<Recipe> recipesWithToAddIngredients = new ArrayList<Recipe>();
-		List<String> toAddIngredients = readFiltersForEachMorbidity(toAddIngredientColumn);
 
 		for (Recipe recipe : safeList) {
 			// Check if any string from filter columnValues is present in
@@ -239,12 +257,57 @@ public class BaseRecipeExtractor {
 	}
 
 	/**
+	 * Reads the filters for Allergies list shared by the Hackathon organisers
+	 * 
+	 * @return
+	 */
+	private List<String> readFoodCategoryList() {
+		List<String> columnValues = null;
+
+		try (FileInputStream inputStream = new FileInputStream(FILE_PATH_FOOD_CATEGORIES)) {
+			Workbook workbook = WorkbookFactory.create(inputStream);
+			Sheet sheet = workbook.getSheet(FOOD_CATEGORIES_WORK_SHEET_NAME);
+
+			columnValues = ExcelReader.getColumnValues(sheet, FOOD_CATEGORIES_COLUMN_INDEX);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return columnValues;
+	}
+
+	/**
+	 * Reads the filters for Allergies list shared by the Hackathon organisers
+	 * 
+	 * @return
+	 */
+	private List<String> readRecipeCategoryList() {
+		List<String> columnValues = null;
+
+		try (FileInputStream inputStream = new FileInputStream(FILE_PATH_RECIPE_CATEGORIES)) {
+			Workbook workbook = WorkbookFactory.create(inputStream);
+			Sheet sheet = workbook.getSheet(RECIPE_CATEGORIES_WORK_SHEET_NAME);
+
+			columnValues = ExcelReader.getColumnValues(sheet, RECIPE_CATEGORIES_COLUMN_INDEX);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return columnValues;
+	}
+
+	/**
 	 * In each recipe page fetching the required data for expected output
 	 * elements
 	 * 
 	 * @param recipe
+	 * @param recipeCategoriesList
+	 * @param foodCategoriesList
+	 * @param categoryMappings
 	 */
-	private void populateRecipe(Recipe recipe) {
+	private void populateRecipe(Recipe recipe, List<String> foodCategoriesList, List<String> recipeCategoriesList) {
 
 		try {
 
@@ -267,9 +330,37 @@ public class BaseRecipeExtractor {
 
 			// //Recipe Category
 			// WebElement recipeCategory = driver.findElement(By.xpath(""));
+			String tempRecipeCategory = "";
+			try {
+				List<WebElement> recipeCategories = driver.findElements(By.xpath("//*[@itemprop=\"recipeCategory\"]"));
+				StringBuffer categoryBuffer = new StringBuffer(256);
+				for (WebElement category : recipeCategories) {
+					categoryBuffer.append(category.getText());
+					categoryBuffer.append("\n");
+				}
+				tempRecipeCategory = categoryBuffer.toString();
+			} catch (NoSuchElementException e) {
+			}
 
-			// food category
-			// WebElement foodCategory= driver.findElement(By.xpath(""));
+			String recipeNameAndTags = recipe.getRecipeName() + "\n" + tempRecipeCategory;
+
+			// Identify food and recipe categories
+			String foodCategory = foodCategoriesList.stream().filter(recipeNameAndTags::contains)
+					.collect(Collectors.joining(", "));
+			String recipeCategory = recipeCategoriesList.stream().filter(recipeNameAndTags::contains)
+					.collect(Collectors.joining(", "));
+
+			// if food category found in the tags, set the correct food
+			// category
+			if (foodCategory != null) {
+				recipe.setFoodCategory(foodCategory.toString());
+			}
+
+			// if recipe category found in the tags, set the correct recipe
+			// category
+			if (recipeCategory != null) {
+				recipe.setRecipeCategory(recipeCategory.toString());
+			}
 
 			// ingredients
 			try {
@@ -326,6 +417,10 @@ public class BaseRecipeExtractor {
 
 			System.err.println(
 					"Error while scraping pages for URL : " + recipe.getRecipeURL() + " :: Error : " + e.getMessage());
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e1) {
+			}
 		}
 
 	}
@@ -385,7 +480,7 @@ public class BaseRecipeExtractor {
 			}
 		}
 
-//		System.out.println("Total Pages : " + maxPageSize);
+		// System.out.println("Total Pages : " + maxPageSize);
 
 		// Generate pagination URLs
 		String basePaginationUrl = driver.getCurrentUrl() + PAGEINDEX_PARAM_NAME;
