@@ -7,7 +7,7 @@ public class Hypertension extends BaseRecipeExtractor{
 
 	
 	@Test
-	public void scrapHypothyroidismRecipes() throws InterruptedException {
+	public void scrapHypertensionRecipes() throws InterruptedException {
 
 		// load the recipes page that has all recipes by category
 		loadRecipiesPage();
