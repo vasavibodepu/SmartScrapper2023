@@ -52,8 +52,8 @@ public class BaseRecipeExtractor {
 	private static final String ALLERGIES_WORK_SHEET_NAME = "Allergies";
 	private static final String FILE_PATH_ALLERGIES = SRC_TEST_RESOURCES_TEST_DATA_INPUT + "Allergies.xlsx";
 
-	private static final int MAX_RECEIPES_PER_MORBIDITY = 1200;
-	private static final int MAX_PAGES_TO_FETCH = 50;
+	private static final int MAX_RECEIPES_PER_MORBIDITY = 720;
+	private static final int MAX_PAGES_TO_FETCH = 30;
 	protected WebDriver driver = null;
 
 	public BaseRecipeExtractor() {
@@ -100,6 +100,7 @@ public class BaseRecipeExtractor {
 		// arraylist to store all the links
 		ArrayList<String> links = new ArrayList<>();
 
+		System.out.println("################# Calculating the number of pages to scan for Morbidity : " + morbidity);
 		fetchAllRecipeUrlsFromPagination(links, driver);
 		System.out.println("Morbidity : " + morbidity + " :: Number of Urls to scrape : " + links.size());
 
@@ -124,7 +125,7 @@ public class BaseRecipeExtractor {
 		}
 
 //		System.out.println("allRecipes : " + allRecipes);
-		System.out.println("Exporting recipes for modbidity : " + morbidity);
+		System.out.println("Exporting recipes that does not have eliminated ingredients for modbidity : " + morbidity);
 
 		// Export allRecipes that does not have eliminated ingredients
 		// into excel <Morbidity>.xlsx . e.g., Hypothyroidism.xlsx
@@ -164,6 +165,8 @@ public class BaseRecipeExtractor {
 			}
 		}
 
+		System.out.println("Exporting \"allergy free\" recipes for modbidity : " + morbidity);
+
 		// Write recipes that contain ingredients from to add list into excel
 		// sheet morbidity_Allergies.xlsx. e.g, Hypothyroidism_Allergies.xlsx
 		String morbidityAllergiesFileName = TEAM_PREFIX_FOR_XLSX + morbidity + ALLERGIES_SUFFIX;
@@ -181,6 +184,8 @@ public class BaseRecipeExtractor {
 				recipesWithToAddIngredients.add(recipe);
 			}
 		}
+
+		System.out.println("Exporting recipes with \"To Add\" List for modbidity : " + morbidity);
 
 		// Write recipes that contain ingredients from to add list into excel
 		// sheet morbidity_To_Add.xlsx. e.g, Hypothyroidism_To_Add.xlsx
@@ -380,7 +385,7 @@ public class BaseRecipeExtractor {
 			}
 		}
 
-		System.out.println("Total Pages : " + maxPageSize);
+//		System.out.println("Total Pages : " + maxPageSize);
 
 		// Generate pagination URLs
 		String basePaginationUrl = driver.getCurrentUrl() + PAGEINDEX_PARAM_NAME;
