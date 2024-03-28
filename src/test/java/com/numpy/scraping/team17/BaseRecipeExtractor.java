@@ -65,8 +65,8 @@ public class BaseRecipeExtractor {
 			+ "RecipeCategories.xlsx";
 	private static final int RECIPE_CATEGORIES_COLUMN_INDEX = 1;
 
-	private static final int MAX_RECEIPES_PER_MORBIDITY = 600;
-	private static final int MAX_PAGES_TO_FETCH = 25;
+	private static final int MAX_RECEIPES_PER_MORBIDITY = 1;
+	private static final int MAX_PAGES_TO_FETCH = 1;
 	protected WebDriver driver = null;
 
 	public BaseRecipeExtractor() {
